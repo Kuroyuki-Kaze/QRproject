@@ -12,6 +12,29 @@ class LengthError(Exception):
         self.message = message
         super().__init__(self.message)
 
+class MaskError(Exception):
+    def __init__(self, message: str) -> None:
+        super().__init__(self.message)
+
+def buildQR(qr: list, start: tuple, end: tuple, message: str, startbit: int, mask: int) -> list:
+    bitcount = startbit
+    for i in range(start[0], end[0] + ((1*(start[0] < end[0])) + (-1)*(start[0] > end[0])), (1*(start[0] < end[0])) + (-1)*(start[0] > end[0])):
+        for j in range(start[1], end[1] - 1, -1):
+            #print(f"({i}, {j}) =", end="")
+            if mask == 0:
+                if ((i + j) % 2) == 0:
+                    qr[i][j] = ApplyMask(int(message[bitcount]))
+                else:
+                    qr[i][j] = int(message[bitcount])
+                #print(f"{qr[i][j]}")
+                #print(f"bitcount: {bitcount}")
+                bitcount += 1
+            else:
+                raise MaskError("Invalid mask.")
+
+    return qr
+
+
 def printQR(qr: list) -> None:
     """Prints the QR code from a binary string."""
 
@@ -26,10 +49,10 @@ def printQR(qr: list) -> None:
         print("⬜⬜⬜⬜⬜\n", end="")
     print("⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜\n⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜\n⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜\n⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜\n⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜")
 
-def mask(b: int) -> int:
+def ApplyMask(bit: int) -> int:
     """Apply Mask."""
 
-    if b == 0:
+    if bit == 0:
         return 1
     else:
         return 0
@@ -105,7 +128,7 @@ def createErrorCorrectionH(message: str) -> str:
 
     return [i[1][1] for i in sortedMsgPoly][1:]
 
-def createQR(message: str) -> list:
+def createQR1(message: str, maskNum: int) -> list:
     """Creates a QR binary string from a message of no longer than 7 charcters."""
 
     messageString: str = "0100"
@@ -153,31 +176,59 @@ def createQR(message: str) -> list:
     m: str = messageString 
     
     qr: list = [
-        [1, 1, 1, 1, 1, 1, 1, 0, 1, m[137], m[136], m[135], m[134], 0, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, m[139], m[138], m[133], m[132], 0, 1, 0, 0, 0, 0, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 0, m[141], m[140], m[131], m[130], 0, 1, 0, 1, 1, 1, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 1, m[143], m[142], m[129], m[128], 0, 1, 0, 1, 1, 1, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 0, m[145], m[144], m[127], m[126], 0, 1, 0, 1, 1, 1, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, m[147], m[146], m[125], m[124], 0, 1, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 0, 1,      0,      1,      0,      1, 0, 1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, m[149], m[148], m[123], m[122], 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 1, 1, 1, 0, 1, m[151], m[150], m[121], m[120], 1, 0, 0, 0, 1, 0, 0, 1],
-        [m[201], m[200], m[199], m[198], m[185], m[184], 0, m[183], m[182], m[153], m[152], m[119], m[118],  m[73], m[72], m[71], m[70], m[25], m[24], m[23], m[22]],
-        [m[203], m[202], m[197], m[196], m[187], m[186], 1, m[181], m[180], m[155], m[154], m[117], m[116],  m[75], m[74], m[69], m[68], m[27], m[26], m[21], m[20]],
-        [m[205], m[204], m[195], m[194], m[189], m[188], 0, m[179], m[178], m[157], m[156], m[115], m[114],  m[77], m[76], m[67], m[66], m[29], m[28], m[19], m[18]],
-        [m[207], m[206], m[193], m[192], m[191], m[190], 1, m[177], m[176], m[159], m[158], m[113], m[112],  m[79], m[78], m[65], m[64], m[31], m[30], m[17], m[16]],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, m[161], m[160], m[111], m[110],  m[81], m[80], m[63], m[62], m[33], m[32], m[15], m[14]],
-        [1, 1, 1, 1, 1, 1, 1, 0, 0, m[163], m[162], m[109], m[108],  m[83], m[82], m[61], m[60], m[35], m[34], m[13], m[12]],
-        [1, 0, 0, 0, 0, 0, 1, 0, 1, m[165], m[164], m[107], m[106],  m[85], m[84], m[59], m[58], m[37], m[36], m[11], m[10]],
-        [1, 0, 1, 1, 1, 0, 1, 0, 1, m[167], m[166], m[105], m[104],  m[87], m[86], m[57], m[56], m[39], m[38],  m[9],  m[8]],
-        [1, 0, 1, 1, 1, 0, 1, 0, 0, m[169], m[168], m[103], m[102],  m[89], m[88], m[55], m[54], m[41], m[40],  m[7],  m[6]],
-        [1, 0, 1, 1, 1, 0, 1, 0, 1, m[171], m[170], m[101], m[100],  m[91], m[90], m[53], m[52], m[43], m[42],  m[5],  m[4]],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, m[173], m[172],  m[99],  m[98],  m[93], m[92], m[51], m[50], m[45], m[44],  m[3],  m[2]],
-        [1, 1, 1, 1, 1, 1, 1, 0, 0, m[175], m[174],  m[97],  m[96],  m[95], m[94], m[49], m[48], m[47], m[46],  m[1],  m[0]]
+        #0v 1v 2v 3v 4v 5v 6v 7v 8v 9d Ad Bd Cd Dv Ev Fv Gv Hv Iv Jv Kv
+        [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], #0block
+        [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1], #1block
+        [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1], #2block
+        [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1], #3block
+        [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1], #4block
+        [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1], #5block
+        [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1], #6block, timing
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #7block
+        [0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1], #8block
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #9hi data
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Ahi data
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Bhi data
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Chi data
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Dblock
+        [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Eblock
+        [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Fblock
+        [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Gblock
+        [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Hblock
+        [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Iblock
+        [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Jblock
+        [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  #Kblock
     ]
+
+    #print(m)
+    qr = buildQR(qr, (20, 20), (9, 19), m, 0, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (9, 18), (20, 17), m, 24, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (20, 16), (9, 15), m, 48, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (9, 14), (20, 13), m, 72, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (20, 12), (7, 11), m, 96, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (5, 12), (0, 11), m, 124, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (0, 10), (5, 9), m, 136, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (7, 10), (20, 9), m, 148, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (12, 8), (9, 7), m, 176, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (9, 5), (12, 4), m, 184, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (12, 3), (9, 2), m, 192, maskNum)
+    #printQR(qr)
+    qr = buildQR(qr, (9, 1), (12, 0), m, 200, maskNum)
+    #printQR(qr)
+    
     #print(qr)
 
-    bitmask: list = [
+    bitmask0: list = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,],
@@ -201,11 +252,11 @@ def createQR(message: str) -> list:
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,],
     ]
     
-    for i in range(21):
-        for j in range(21):
-            qr[i][j] = int(qr[i][j])
-            if bitmask[i][j] == 1:
-                qr[i][j] = mask(qr[i][j])
+    #for i in range(21):
+    #    for j in range(21):
+    #        qr[i][j] = int(qr[i][j])
+    #        if bitmask[i][j] == 1:
+    #            qr[i][j] = ApplyMask(qr[i][j])
     
     return qr
 
