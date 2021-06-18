@@ -128,7 +128,7 @@ def createErrorCorrectionH(message: str) -> str:
 
     return [i[1][1] for i in sortedMsgPoly][1:]
 
-def createQR1(message: str, maskNum: int) -> list:
+def createQR_part1(message: str) -> list:
     """Creates a QR binary string from a message of no longer than 7 charcters."""
 
     messageString: str = "0100"
@@ -168,6 +168,10 @@ def createQR1(message: str, maskNum: int) -> list:
             messageString += "00010001"
             mSLength = len(messageString)
 
+
+    return messageString
+
+def createQR_part2(messageString: str, maskNum: int) -> list:
     errorCorrection: list = createErrorCorrectionH(messageString)
 
     for num in errorCorrection:
@@ -200,63 +204,25 @@ def createQR1(message: str, maskNum: int) -> list:
         [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  #Kblock
     ]
 
-    #print(m)
     qr = buildQR(qr, (20, 20), (9, 19), m, 0, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (9, 18), (20, 17), m, 24, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (20, 16), (9, 15), m, 48, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (9, 14), (20, 13), m, 72, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (20, 12), (7, 11), m, 96, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (5, 12), (0, 11), m, 124, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (0, 10), (5, 9), m, 136, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (7, 10), (20, 9), m, 148, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (12, 8), (9, 7), m, 176, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (9, 5), (12, 4), m, 184, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (12, 3), (9, 2), m, 192, maskNum)
-    #printQR(qr)
     qr = buildQR(qr, (9, 1), (12, 0), m, 200, maskNum)
-    #printQR(qr)
     
-    #print(qr)
+    return qr
 
-    bitmask0: list = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,], #timing
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,], #hi data
-        [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,], #hi data
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,], #hi data
-        [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,], #hi data
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,],
-    ]
-    
-    #for i in range(21):
-    #    for j in range(21):
-    #        qr[i][j] = int(qr[i][j])
-    #        if bitmask[i][j] == 1:
-    #            qr[i][j] = ApplyMask(qr[i][j])
+
+def createQR(message: str, maskNum: int) -> list:
+    msg = createQR_part1(message)
+    qr = createQR_part2(msg, maskNum)
     
     return qr
 
